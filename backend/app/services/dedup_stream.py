@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from app.services.base import BaseModuleService
+from app.services.handoff import handoff_service
 
 
 class DedupStreamService(BaseModuleService):
@@ -13,3 +14,21 @@ class DedupStreamService(BaseModuleService):
     STATUS_ORDER = ["草稿", "去重中", "窗口溢出", "已停用"]
     ACTION_RULES = {"启效去重": "去重中", "扩窗处理": "窗口溢出", "停用去重": "已停用"}
     NEGATIVE_ACTIONS = ["停用去重"]
+
+    def acceptance_ledger(self) -> dict[str, Any]:
+        """回报去重窗口实际接纳范围与仍缺的批次，供解析核对记录一致性。"""
+        state = handoff_service.snapshot()
+        side = state["sides"]["dedup_stream"]
+        return {
+            "side": "dedup_stream",
+            "accepted_ranges": side["accepted_ranges"],
+            "accepted_count": side["accepted_count"],
+            "queued_ranges": side["queued_ranges"],
+            "missing_batches": side["missing_batches"],
+            "pending_receipts": side["pending_batches"],
+            "by_version": side["acceptance_ranges_by_version"],
+            "receipts": [
+                row for row in state["acceptance_receipts"]
+                if row["side"] == "dedup_stream"
+            ],
+        }

@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from app.services.base import BaseModuleService
+from app.services.handoff import handoff_service
 from app.store import store
 
 
@@ -80,3 +81,18 @@ class BinlogParseService(BaseModuleService):
                     result["affected_downstream"] += 1
 
         return result
+
+    def resolve_committable_position(self) -> dict[str, Any]:
+        """依据两侧接纳回执核定解析可提交位点：只取从 101 起连续确认的前缀。"""
+        state = handoff_service.snapshot()
+        return {
+            "committed_position": state["committed_position"],
+            "committable_position": state["committable_position"],
+            "final_position": state["final_position"],
+            "committed_offset": state["stream"]["committed_offset"],
+            "dim_join_accepted": state["sides"]["dim_join"]["accepted_ranges"],
+            "dedup_accepted": state["sides"]["dedup_stream"]["accepted_ranges"],
+            "dedup_missing": state["sides"]["dedup_stream"]["missing_batches"],
+            "consistency": state["consistency"],
+            "backlog_segments": state["backlog_segments"],
+        }

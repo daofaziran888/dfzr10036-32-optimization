@@ -70,3 +70,32 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .analysis-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 12px 0; }
 .analysis-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--brand); min-width: 24px; position: relative; transition: height 0.4s; }
 .analysis-bar span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--muted); white-space: nowrap; }
+/* 映射交接工作台 */
+.handoff-page .page-actions { flex-wrap: wrap; justify-content: flex-end; max-width: 720px; }
+.notice-text { color: #1a7f37; font-size: 13px; }
+.panel { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+.panel h3 { font-size: 14px; margin: 0 0 6px; }
+.panel h4 { font-size: 13px; margin: 12px 0 4px; }
+.panel-hint { color: var(--muted); font-size: 12px; margin: 4px 0 8px; }
+.data-table.compact th, .data-table.compact td { padding: 6px 8px; font-size: 12px; }
+.version-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.version-card { flex: 1; min-width: 260px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: #fafbfc; }
+.version-card header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.version-card dl { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; margin: 0; font-size: 12px; }
+.version-card dt { color: var(--muted); }
+.version-card dd { margin: 0; }
+.chip { background: #eef2ff; color: #3538cd; border-radius: 10px; padding: 1px 8px; font-size: 11px; }
+.workbench-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.batch-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+.batch-list li { border: 1px dashed var(--border); border-radius: 6px; padding: 8px; }
+.big-position { display: flex; gap: 12px; flex-wrap: wrap; font-size: 14px; margin: 4px 0 8px; }
+.big-position span { background: #f0f6ff; border-radius: 6px; padding: 4px 10px; }
+.backlog-box { border: 1px solid #f5c26b; background: #fff8e6; border-radius: 6px; padding: 8px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 4px; }
+.queue-line { font-size: 12px; color: #475569; word-break: break-all; }
+.event-list { list-style: none; margin: 0; padding: 0; font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
+.event-list li { display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid #f0f2f5; padding-bottom: 4px; }
+.event-time { color: var(--muted); }
+.filter-bar select, .filter-bar input { border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 12px; }
+@media (max-width: 1100px) { .workbench-grid { grid-template-columns: 1fr; } }
+.handoff-banner { margin-bottom: 12px; }
+.handoff-banner .panel-hint { margin-bottom: 6px; }

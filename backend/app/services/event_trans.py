@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from app.services.base import BaseModuleService
+from app.services.handoff import handoff_service
 from app.store import store
 
 
@@ -85,3 +86,24 @@ class EventTransService(BaseModuleService):
             results["dedup"] = dedup_config
 
         return results
+
+    def deliver_batches_to_sides(self, action: str = "resend_both") -> dict[str, Any]:
+        """按转换批次交付数据，把各版事件同时送入维表关联和去重窗口。
+
+        数据流链路: event_trans(转换批次) -> dim_join + dedup_stream
+        每个批次带明确的映射版本和位点区间；重叠位点沿用旧批归属，只交付不重复接纳。
+        """
+        result = {
+            "arrive_new_batch": handoff_service.arrive_new_batch,
+            "resend_both": handoff_service.resend_both,
+        }.get(action, handoff_service.resend_both)()
+        state = result["state"]
+        return {
+            "ok": result["ok"],
+            "message": result["message"],
+            "deliveries": state["deliveries"],
+            "batches": state["batches"],
+            "dim_join_acceptance": state["sides"]["dim_join"]["accepted_ranges"],
+            "dedup_acceptance": state["sides"]["dedup_stream"]["accepted_ranges"],
+            "dedup_queue": state["sides"]["dedup_stream"]["queued_ranges"],
+        }

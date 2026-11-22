@@ -22,6 +22,15 @@
       </article>
     </div>
 
+    <section v-if="handoff" class="panel handoff-banner" data-testid="handoff-banner">
+      <h3>映射改版交接</h3>
+      <p class="panel-hint">
+        解析已提交 {{ handoff.committed_position }}，可提交 {{ handoff.committable_position }}；
+        维表关联处理到 {{ dimProgress }}，去重缺口 {{ dedupGap }}。
+      </p>
+      <RouterLink class="link" to="/handoff-workbench" data-testid="open-handoff">打开映射交接工作台</RouterLink>
+    </section>
+
     <p class="status-legend">
       <span v-for="item in statusSummary" :key="item.status" class="legend-item">
         {{ item.status }}：{{ item.count }}
@@ -103,7 +112,9 @@ import {
   moduleMeta,
   runAction as applyAction,
 } from '@/api/backend-service'
+import { loadHandoffState } from '@/api/handoff'
 import type { EntryRow } from '@/data/types'
+import type { HandoffState } from '@/data/handoff'
 
 const props = defineProps<{ moduleKey: string }>()
 const meta = moduleMeta(props.moduleKey)
@@ -115,6 +126,18 @@ const filterFields = meta.fields.slice(0, 3)
 const showCreate = ref(false)
 const creating = ref(false)
 const createValues = ref<Record<string, string>>({})
+const handoff = ref<HandoffState | null>(null)
+const dimProgress = computed(() => {
+  const last = handoff.value?.sides.dim_join?.accepted_positions ?? []
+  return last.length ? last[last.length - 1] : '—'
+})
+const dedupGap = computed(() => {
+  const missing = handoff.value?.sides.dedup_stream?.missing_batches ?? []
+  if (!missing.length) return '无'
+  return missing
+    .map((item) => `${item.batch_id}（${item.missing_positions.map(([s, e]) => (s === e ? s : `${s}-${e}`)).join('、')}）`)
+    .join('；')
+})
 const stats = computed(() => [
   { label: meta.metrics[0], value: total.value },
   { label: meta.metrics[1], value: rows.value.filter((row) => row.status === meta.statuses[1]).length },
@@ -187,5 +210,14 @@ async function reload() {
   }
 }
 
-onMounted(reload)
+onMounted(() => {
+  void reload()
+  void loadHandoffState()
+    .then((state) => {
+      handoff.value = state
+    })
+    .catch(() => {
+      handoff.value = null
+    })
+})
 </script>

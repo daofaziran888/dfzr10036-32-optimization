@@ -46,6 +46,25 @@ npm run dev
 前端默认监听 `http://127.0.0.1:5173/`，dev server 不会自动打开浏览器，
 需要自己访问。`/api` 由 vite 代理到后端 `http://127.0.0.1:8000`。
 
+### 映射交接工作台
+
+解析映射改版期间，同一源端补交旧批会带来重复接纳和进度不一致。工作台把
+"转换批次交付数据"作为交接凭据，分别记录维表关联、去重窗口实际接纳的事件，
+再由日志解析按连续前缀核定可提交位点。
+
+- 页面：`http://127.0.0.1:5173/handoff-workbench`（侧栏「映射交接」）
+- 账本：`GET /api/handoff/state`、`/workbench`、`/versions`、`/batches`
+- 凭据：`GET /api/handoff/acceptances?side=&version=&position=`、`/queues`、`/consistency`
+- 动作：`POST /api/handoff/actions/{arrive_new_batch|pause_old_ack|resend_both|receive_old_ack|recover|interrupt|commit|run_scenario|reset}`
+
+规则：重叠位点沿用旧批归属与旧映射，每侧每条只接纳一次；新批独有段用新映射并
+按订单键保序；提交位点只取从 101 起两侧都按所属版本确认过的连续前缀。模块服务
+也暴露了对应入口：`EventTransService.deliver_batches_to_sides`、
+`DimJoinService.acceptance_ledger`、`DedupStreamService.acceptance_ledger`、
+`BinlogParseService.resolve_committable_position`。
+
+回归测试：`cd backend && .venv/bin/python -m unittest discover -s tests`
+
 ## 业务模块
 
 | 模块 | 目录 | 业务对象 | 主要字段 |

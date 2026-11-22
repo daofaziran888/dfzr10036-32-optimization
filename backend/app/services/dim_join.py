@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from app.services.base import BaseModuleService
+from app.services.handoff import handoff_service
 from app.store import store
 
 
@@ -124,3 +125,18 @@ class DimJoinService(BaseModuleService):
                 break
 
         return results
+
+    def acceptance_ledger(self) -> dict[str, Any]:
+        """回报维表关联实际接纳范围，供解析核对记录一致性。"""
+        side = handoff_service.snapshot()["sides"]["dim_join"]
+        return {
+            "side": "dim_join",
+            "accepted_ranges": side["accepted_ranges"],
+            "accepted_count": side["accepted_count"],
+            "by_version": side["acceptance_ranges_by_version"],
+            "order_states": side["order_states"],
+            "receipts": [
+                row for row in handoff_service.snapshot()["acceptance_receipts"]
+                if row["side"] == "dim_join"
+            ],
+        }
